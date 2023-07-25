@@ -1,0 +1,37 @@
+* {
+  font-family: "Roboto", sans-serif;
+}
+
+#title {
+  text-align: center;
+}
+
+#questionContainer {
+  text-align: center; /* Center the question and buttons horizontally */
+  margin-top: 13rem;
+}
+
+#questionContainer button {
+  display: block; /* Display the buttons on separate lines */
+  font-size: 25px;
+  padding: 10px;
+  margin: 10px auto; /* Add margin around each button */
+  border: none;
+  background-color: black;
+  color: #fff;
+  border-radius: 4px;
+}
+
+#questionContainer button:hover {
+  color: black;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+#questionContainer button#answerButton {
+  color: aqua;
+}
+
+#questionContainer #questionEl {
+  font-size: 20px;
+}/*# sourceMappingURL=style.css.map */
