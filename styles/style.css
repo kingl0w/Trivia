@@ -7,15 +7,15 @@
 }
 
 #questionContainer {
-  text-align: center; /* Center the question and buttons horizontally */
+  text-align: center;
   margin-top: 13rem;
 }
 
 #questionContainer button {
-  display: block; /* Display the buttons on separate lines */
+  display: block;
   font-size: 25px;
   padding: 10px;
-  margin: 10px auto; /* Add margin around each button */
+  margin: 10px auto;
   border: none;
   background-color: black;
   color: #fff;
@@ -26,12 +26,27 @@
   color: black;
   background-color: #fff;
   cursor: pointer;
+  border: 3px solid black;
 }
 
 #questionContainer button#answerButton {
-  color: aqua;
+  color: black;
+  width: 400px;
+  background-color: #fff;
+  border: 1px solid black;
 }
 
 #questionContainer #questionEl {
-  font-size: 20px;
+  font-size: 30px;
+}
+
+#scoreBox {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #f0f0f0;
+  padding: 10px;
+  margin-bottom: 20px;
+  display: none;
 }/*# sourceMappingURL=style.css.map */
