@@ -12,5 +12,9 @@
     "sass": "^1.64.0",
     "typescript": "^5.0.2",
     "vite": "^4.4.5"
+  },
+  "dependencies": {
+    "@types/he": "^1.2.0",
+    "he": "^1.2.0"
   }
 }

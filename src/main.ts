@@ -1,8 +1,10 @@
 import '../styles/style.scss';
+import * as he from 'he';
 
 const startButton = document.getElementById('startButton')!;
 const questionContainer = document.getElementById('questionContainer')!;
 const scoreBox = document.getElementById('scoreBox')!;
+const apiUrl = 'https://opentdb.com/api.php?amount=10&difficulty=easy';
 
 let currentQuestionIndex = 0;
 let score = 0;
@@ -14,62 +16,37 @@ interface Question {
   correctAnswerIndex: number;
 }
 
-//question data
-const questions: Question[] = [
-  {
-    questionText: 'What is the capitol of France?',
-    answerChoices: ['London', 'Paris', 'Berlin', 'Madrid'],
-    correctAnswerIndex: 1,
-  },
-  {
-    questionText: 'What is the largest planet in our solar system?',
-    answerChoices: ['Earth', 'Mars', 'Jupiter', 'Venus'],
-    correctAnswerIndex: 2,
-  },
-  {
-    questionText: 'What is the largest continent on the planet?',
-    answerChoices: ['Australia', 'South America', 'Asia', 'Africa'],
-    correctAnswerIndex: 2,
-  },
-  {
-    questionText:
-      '"The Da Vinci Code" opens with a murder in which famous museum?',
-    answerChoices: ['The Getty', 'Rijksmuseum', 'Vatican Museum', 'The Louvre'],
-    correctAnswerIndex: 3,
-  },
-  {
-    questionText:
-      'How old was Queen Elizabeth II when she was crowned the Queen of England?',
-    answerChoices: ['27', '33', '15', '42'],
-    correctAnswerIndex: 0,
-  },
-  {
-    questionText: 'What president was a licensed bartender?',
-    answerChoices: [
-      'Bill Clinton',
-      'Abraham Lincoln',
-      'Andrew Jackson',
-      'Ronald Regan',
-    ],
-    correctAnswerIndex: 1,
-  },
-  {
-    questionText:
-      'Which Italian town is the setting for Shakespeares Romeo and Juliet?',
-    answerChoices: ['Padua', 'Rome', 'Verona', 'Milan'],
-    correctAnswerIndex: 2,
-  },
-  {
-    questionText: 'How many floors does the Eiffel Tower have?',
-    answerChoices: ['3', '0', '22', '17'],
-    correctAnswerIndex: 0,
-  },
-  {
-    questionText: "What is the Grinch's dog's name?",
-    answerChoices: ['Jim', 'Max', 'Tom', 'Marvin'],
-    correctAnswerIndex: 1,
-  },
-];
+//empty array for questions
+let questions: Question[] = [];
+
+//parse quotes correctly
+function decodeHTMLEntities(text: string): string {
+  return he.decode(text);
+}
+
+//fetch questions from API
+async function fetchQuestionsFromAPI(url: string) {
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
+    questions = data.results.map((result: any) => {
+      const decodeQuestionText = decodeHTMLEntities(result.question); //parse question text
+      const decodedAnswerChoices =
+        result.incorrect_answers.map(decodeHTMLEntities);
+      const decodedCorrectAnswer = decodeHTMLEntities(result.correct_answer);
+
+      const question: Question = {
+        questionText: decodeQuestionText,
+        answerChoices: [...decodedAnswerChoices, decodedCorrectAnswer],
+        correctAnswerIndex: result.incorrect_answers.length,
+      };
+      return question;
+    });
+    startGame();
+  } catch (error) {
+    console.error('Error fetching questions:', error);
+  }
+}
 
 //function to display current question and its answer choices
 function showQuestion() {
@@ -104,6 +81,13 @@ function showQuestion() {
       } else {
         console.log('Wrong answer selected!');
         answerButton.style.backgroundColor = 'red';
+
+        //when the incorrect answer is selected the correct answer will show as green
+        const correctAnswerButton =
+          document.querySelectorAll<HTMLButtonElement>('#answerButton')[
+            currentQuestion.correctAnswerIndex
+          ];
+        correctAnswerButton.style.backgroundColor = 'green';
       }
 
       //disable all answer buttons temporarily to prevent multiple clicks
@@ -139,4 +123,7 @@ function startGame() {
   scoreBox.style.display = 'block';
 }
 
-startButton.addEventListener('click', startGame);
+//event listener that starts the game when the button is clicked
+startButton.addEventListener('click', () => {
+  fetchQuestionsFromAPI(apiUrl); //questions are fetched after button is clicked
+});
