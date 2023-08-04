@@ -5,6 +5,8 @@ const startButton = document.getElementById('startButton')!;
 const questionContainer = document.getElementById('questionContainer')!;
 const scoreBox = document.getElementById('scoreBox')!;
 const apiUrl = 'https://opentdb.com/api.php?amount=10&difficulty=easy';
+const mediumDifficultyApiUrl =
+  'https://opentdb.com/api.php?amount=10&difficulty=medium';
 
 let currentQuestionIndex = 0;
 let score = 0;
@@ -48,13 +50,54 @@ async function fetchQuestionsFromAPI(url: string) {
   }
 }
 
+//medium difficulty questions
+async function fetchMediumDifficultyQuestions() {
+  try {
+    const response = await fetch(mediumDifficultyApiUrl);
+    const data = await response.json();
+    const mediumDifficultyQuestions: Question[] = data.results.map(
+      (result: any) => {
+        const decodeQuestionText = decodeHTMLEntities(result.question);
+        const decodedAnswerChoices =
+          result.incorrect_answers.map(decodeHTMLEntities);
+        const decodedCorrectAnswer = decodeHTMLEntities(result.correct_answer);
+
+        const question: Question = {
+          questionText: decodeQuestionText,
+          answerChoices: [...decodedAnswerChoices, decodedCorrectAnswer],
+          correctAnswerIndex: result.incorrect_answers.length,
+        };
+        return question;
+      }
+    );
+    return mediumDifficultyQuestions;
+  } catch (error) {
+    console.error('Error fetching medium difficulty questions:', error);
+    return []; //return an empty array if there's an error fetching questions
+  }
+}
+
 //function to display current question and its answer choices
-function showQuestion() {
+async function showQuestion() {
   const currentQuestion = questions[currentQuestionIndex];
 
   if (!currentQuestion) {
     //all questions have been displayed
-    questionContainer.textContent = 'Congratulations! You completed the game!';
+    if (score >= 600) {
+      questionContainer.textContent =
+        'Congrats! You move on to the next round!';
+      setTimeout(async () => {
+        questionContainer.textContent = '';
+        const mediumDifficultyQuestions =
+          await fetchMediumDifficultyQuestions();
+        questions = [...mediumDifficultyQuestions, ...questions];
+        console.log('medium questions');
+        currentQuestionIndex = 0; //reset the question index for the new set of questions
+        showQuestion(); //start displaying the second set of questions
+      }, 5000); //display message for 5 seconds
+    } else {
+      questionContainer.textContent = `Better luck next time! Your final score is: ${score}`;
+    }
     return;
   }
 
@@ -126,4 +169,5 @@ function startGame() {
 //event listener that starts the game when the button is clicked
 startButton.addEventListener('click', () => {
   fetchQuestionsFromAPI(apiUrl); //questions are fetched after button is clicked
+  console.log('easy questions');
 });
