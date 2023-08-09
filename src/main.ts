@@ -4,9 +4,9 @@ import * as he from 'he';
 const startButton = document.getElementById('startButton')!;
 const questionContainer = document.getElementById('questionContainer')!;
 const scoreBox = document.getElementById('scoreBox')!;
-const apiUrl = 'https://opentdb.com/api.php?amount=10&difficulty=easy';
+const apiUrl = 'https://opentdb.com/api.php?amount=20&difficulty=easy';
 const mediumDifficultyApiUrl =
-  'https://opentdb.com/api.php?amount=10&difficulty=medium';
+  'https://opentdb.com/api.php?amount=20&difficulty=medium';
 
 let currentQuestionIndex = 0;
 let score = 0;
@@ -95,11 +95,16 @@ async function showQuestion() {
         currentQuestionIndex = 0; //reset the question index for the new set of questions
         showQuestion(); //start displaying the second set of questions
       }, 5000); //display message for 5 seconds
+    } else if (score >= 1000) {
+      questionContainer.textContent =
+        'Congrats! You move on to the next round!';
     } else {
       questionContainer.textContent = `Better luck next time! Your final score is: ${score}`;
     }
     return;
   }
+
+  //TODO Major TODO: the answer always seems to be the one on the bottom, the second set of questions repeat the first set need to find a way to set the questions to 10, add multiplier and timing function
 
   //display the current text as regular text
   const questionElement = document.createElement('div');
