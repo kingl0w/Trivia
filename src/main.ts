@@ -4,9 +4,6 @@ import * as he from 'he';
 const startButton = document.getElementById('startButton')!;
 const questionContainer = document.getElementById('questionContainer')!;
 const scoreBox = document.getElementById('scoreBox')!;
-const apiUrl = 'https://opentdb.com/api.php?amount=20&difficulty=easy';
-const mediumDifficultyApiUrl =
-  'https://opentdb.com/api.php?amount=20&difficulty=medium';
 
 let currentQuestionIndex = 0;
 let score = 0;
@@ -27,12 +24,14 @@ function decodeHTMLEntities(text: string): string {
 }
 
 //fetch questions from API
-async function fetchQuestionsFromAPI(url: string) {
+async function fetchAndProcessQuestions(difficulty: string) {
+  const apiUrl = `https://opentdb.com/api.php?amount=20&difficulty=${difficulty}`;
+
   try {
-    const response = await fetch(url);
+    const response = await fetch(apiUrl);
     const data = await response.json();
-    questions = data.results.map((result: any) => {
-      const decodeQuestionText = decodeHTMLEntities(result.question); //parse question text
+    const processedQuestions: Question[] = data.results.map((result: any) => {
+      const decodeQuestionText = decodeHTMLEntities(result.question);
       const decodedAnswerChoices =
         result.incorrect_answers.map(decodeHTMLEntities);
       const decodedCorrectAnswer = decodeHTMLEntities(result.correct_answer);
@@ -44,36 +43,25 @@ async function fetchQuestionsFromAPI(url: string) {
       };
       return question;
     });
-    startGame();
+
+    return processedQuestions;
   } catch (error) {
-    console.error('Error fetching questions:', error);
+    console.error(`Error fetching ${difficulty} difficulty questions:`, error);
+    return [];
   }
 }
 
-//medium difficulty questions
-async function fetchMediumDifficultyQuestions() {
-  try {
-    const response = await fetch(mediumDifficultyApiUrl);
-    const data = await response.json();
-    const mediumDifficultyQuestions: Question[] = data.results.map(
-      (result: any) => {
-        const decodeQuestionText = decodeHTMLEntities(result.question);
-        const decodedAnswerChoices =
-          result.incorrect_answers.map(decodeHTMLEntities);
-        const decodedCorrectAnswer = decodeHTMLEntities(result.correct_answer);
+async function displayQuestion(question: Question) {
+  const questionElement = document.createElement('div');
+  questionElement.textContent = question.questionText;
+  questionElement.id = 'questionEl';
+  questionContainer.appendChild(questionElement);
 
-        const question: Question = {
-          questionText: decodeQuestionText,
-          answerChoices: [...decodedAnswerChoices, decodedCorrectAnswer],
-          correctAnswerIndex: result.incorrect_answers.length,
-        };
-        return question;
-      }
-    );
-    return mediumDifficultyQuestions;
-  } catch (error) {
-    console.error('Error fetching medium difficulty questions:', error);
-    return []; //return an empty array if there's an error fetching questions
+  for (let j = 0; j < question.answerChoices.length; j++) {
+    const answerButton = document.createElement('button');
+    answerButton.textContent = question.answerChoices[j];
+    answerButton.id = 'answerButton';
+    questionContainer.appendChild(answerButton);
   }
 }
 
@@ -88,8 +76,9 @@ async function showQuestion() {
         'Congrats! You move on to the next round!';
       setTimeout(async () => {
         questionContainer.textContent = '';
-        const mediumDifficultyQuestions =
-          await fetchMediumDifficultyQuestions();
+        const mediumDifficultyQuestions = await fetchAndProcessQuestions(
+          'medium'
+        );
         questions = [...mediumDifficultyQuestions, ...questions];
         console.log('medium questions');
         currentQuestionIndex = 0; //reset the question index for the new set of questions
@@ -153,7 +142,7 @@ async function showQuestion() {
         });
 
         //remove the current question and answer choices from the container
-        questionContainer.innerHTML = '';
+        questionContainer.textContent = '';
 
         //move on to the next question
         currentQuestionIndex++;
@@ -172,7 +161,10 @@ function startGame() {
 }
 
 //event listener that starts the game when the button is clicked
-startButton.addEventListener('click', () => {
-  fetchQuestionsFromAPI(apiUrl); //questions are fetched after button is clicked
+startButton.addEventListener('click', async () => {
+  const easyDifficultyQuestions = await fetchAndProcessQuestions('easy');
   console.log('easy questions');
+  questions = easyDifficultyQuestions;
+
+  startGame();
 });
