@@ -36,10 +36,13 @@ async function fetchAndProcessQuestions(difficulty: string) {
         result.incorrect_answers.map(decodeHTMLEntities);
       const decodedCorrectAnswer = decodeHTMLEntities(result.correct_answer);
 
+      const answerChoices = [...decodedAnswerChoices, decodedCorrectAnswer];
+      const correctAnswerIndex = answerChoices.indexOf(decodedCorrectAnswer);
+
       const question: Question = {
         questionText: decodeQuestionText,
-        answerChoices: [...decodedAnswerChoices, decodedCorrectAnswer],
-        correctAnswerIndex: result.incorrect_answers.length,
+        answerChoices: answerChoices,
+        correctAnswerIndex: correctAnswerIndex,
       };
       return question;
     });
@@ -60,7 +63,7 @@ async function displayQuestion(question: Question) {
   for (let j = 0; j < question.answerChoices.length; j++) {
     const answerButton = document.createElement('button');
     answerButton.textContent = question.answerChoices[j];
-    answerButton.id = 'answerButton';
+    answerButton.classList.add('answerButton'); // Add a class instead of an ID
     questionContainer.appendChild(answerButton);
   }
 }
