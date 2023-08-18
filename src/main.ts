@@ -1,3 +1,4 @@
+//DOM ELEMENTS
 import '../styles/style.scss';
 import * as he from 'he';
 
@@ -5,6 +6,7 @@ const startButton = document.getElementById('startButton')!;
 const questionContainer = document.getElementById('questionContainer')!;
 const scoreBox = document.getElementById('scoreBox')!;
 
+//DATA AND LOGIC
 let currentQuestionIndex = 0;
 let score = 0;
 
@@ -18,11 +20,22 @@ interface Question {
 //empty array for questions
 let questions: Question[] = [];
 
+//UTILITIES
 //parse quotes correctly
 function decodeHTMLEntities(text: string): string {
   return he.decode(text);
 }
 
+function shuffleArray(array: any[]): any[] {
+  const shuffledArray = [...array];
+  for (let i = shuffledArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
+  }
+  return shuffledArray;
+}
+
+//API INTERACTION
 //fetch questions from API
 async function fetchAndProcessQuestions(difficulty: string) {
   const apiUrl = `https://opentdb.com/api.php?amount=20&difficulty=${difficulty}`;
@@ -37,11 +50,13 @@ async function fetchAndProcessQuestions(difficulty: string) {
       const decodedCorrectAnswer = decodeHTMLEntities(result.correct_answer);
 
       const answerChoices = [...decodedAnswerChoices, decodedCorrectAnswer];
-      const correctAnswerIndex = answerChoices.indexOf(decodedCorrectAnswer);
+      const shuffledAnswerChoices = shuffleArray(answerChoices);
+      const correctAnswerIndex =
+        shuffledAnswerChoices.indexOf(decodedCorrectAnswer);
 
       const question: Question = {
         questionText: decodeQuestionText,
-        answerChoices: answerChoices,
+        answerChoices: shuffledAnswerChoices,
         correctAnswerIndex: correctAnswerIndex,
       };
       return question;
@@ -53,17 +68,27 @@ async function fetchAndProcessQuestions(difficulty: string) {
     return [];
   }
 }
+async function startGame() {
+  startButton.style.display = 'none';
+  showQuestion();
 
+  //show score box when the game is started
+  scoreBox.style.display = 'block';
+}
+
+//QUESTION DISPLAY
 async function displayQuestion(question: Question) {
   const questionElement = document.createElement('div');
   questionElement.textContent = question.questionText;
   questionElement.id = 'questionEl';
   questionContainer.appendChild(questionElement);
 
-  for (let j = 0; j < question.answerChoices.length; j++) {
+  const shuffledAnswerChoices = shuffleArray([...question.answerChoices]);
+
+  for (const answerChoice of shuffledAnswerChoices) {
     const answerButton = document.createElement('button');
-    answerButton.textContent = question.answerChoices[j];
-    answerButton.classList.add('answerButton'); // Add a class instead of an ID
+    answerButton.textContent = answerChoice;
+    answerButton.classList.add('answerButton');
     questionContainer.appendChild(answerButton);
   }
 }
@@ -96,7 +121,7 @@ async function showQuestion() {
     return;
   }
 
-  //TODO Major TODO: the answer always seems to be the one on the bottom, the second set of questions repeat the first set need to find a way to set the questions to 10, add multiplier and timing function
+  //TODO the second set of questions repeat the first set need to find a way to set the questions to 10, add multiplier and timing function
 
   //display the current text as regular text
   const questionElement = document.createElement('div');
@@ -155,14 +180,7 @@ async function showQuestion() {
   }
 }
 
-function startGame() {
-  startButton.style.display = 'none';
-  showQuestion();
-
-  //show score box when the game is started
-  scoreBox.style.display = 'block';
-}
-
+//EVENT LISTENER
 //event listener that starts the game when the button is clicked
 startButton.addEventListener('click', async () => {
   const easyDifficultyQuestions = await fetchAndProcessQuestions('easy');
