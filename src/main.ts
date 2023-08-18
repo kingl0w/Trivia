@@ -70,6 +70,9 @@ async function fetchAndProcessQuestions(difficulty: string) {
 }
 async function startGame() {
   startButton.style.display = 'none';
+  const easyDifficultyQuestions = await fetchAndProcessQuestions('easy');
+  console.log('easy questions');
+  questions = easyDifficultyQuestions;
   showQuestion();
 
   //show score box when the game is started
@@ -107,7 +110,7 @@ async function showQuestion() {
         const mediumDifficultyQuestions = await fetchAndProcessQuestions(
           'medium'
         );
-        questions = [...mediumDifficultyQuestions, ...questions];
+        questions = mediumDifficultyQuestions;
         console.log('medium questions');
         currentQuestionIndex = 0; //reset the question index for the new set of questions
         showQuestion(); //start displaying the second set of questions
@@ -183,9 +186,5 @@ async function showQuestion() {
 //EVENT LISTENER
 //event listener that starts the game when the button is clicked
 startButton.addEventListener('click', async () => {
-  const easyDifficultyQuestions = await fetchAndProcessQuestions('easy');
-  console.log('easy questions');
-  questions = easyDifficultyQuestions;
-
   startGame();
 });
