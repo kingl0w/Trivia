@@ -21,6 +21,7 @@ interface Question {
 let questions: Question[] = [];
 
 //UTILITIES
+
 //parse quotes correctly
 function decodeHTMLEntities(text: string): string {
   return he.decode(text);
@@ -36,6 +37,7 @@ function shuffleArray(array: any[]): any[] {
 }
 
 //API INTERACTION
+
 //fetch questions from API
 async function fetchAndProcessQuestions(difficulty: string) {
   const apiUrl = `https://opentdb.com/api.php?amount=20&difficulty=${difficulty}`;
@@ -113,8 +115,8 @@ async function showQuestion() {
         questions = mediumDifficultyQuestions;
         console.log('medium questions');
         currentQuestionIndex = 0; //reset the question index for the new set of questions
-        showQuestion(); //start displaying the second set of questions
-      }, 5000); //display message for 5 seconds
+        showQuestion();
+      }, 4000); //display message for 5 seconds
     } else if (score >= 1000) {
       questionContainer.textContent =
         'Congrats! You move on to the next round!';
@@ -178,12 +180,13 @@ async function showQuestion() {
         //move on to the next question
         currentQuestionIndex++;
         showQuestion();
-      }, 1500); //1.5 seconds
+      }, 1300); //1.5 seconds
     });
   }
 }
 
 //EVENT LISTENER
+
 //event listener that starts the game when the button is clicked
 startButton.addEventListener('click', async () => {
   startGame();
